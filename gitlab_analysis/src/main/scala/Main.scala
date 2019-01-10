@@ -1,39 +1,44 @@
 
-import org.gitlab.api.GitlabAPI
+//import org.gitlab.api.GitlabAPI
+import org.gitlab4j.api.GitLabApi
+//import scala.collection.JavaConverters._
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkConf
 
 object Main {
-  /* This is my first java program.
-  * This will print 'Hello World' as the output
-  */
   def main(args: Array[String]) {
-    println("Hello, world!") // prints Hello World
-
-    var gl: GitlabAPI = GitlabAPI.connect("http://gitlab-poc.globallogic.com", "KonoEtYRBWstrcaFxXrg")
-    gl.getAllProjects().forEach();
-
-
-
+    val url = "https://gitlab-poc.globallogic.com"
+    val token = "KonoEtYRBWstrcaFxXrg"
+    val gitlabAPI = new GitLabApi(url, token)
+    val projApi = gitlabAPI.getProjectApi
+    val projList = projApi.getProjects()
+    var n = 0
+    projList.forEach(project => {
+      n += 1
+      println(n + ": " + project.getName)
+      val lang = projApi.getProjectLanguages(project.getId)
+      lang.entrySet().forEach(l => {
+        println(l.getKey + ":" + l.getValue)
+      })
+      println()
+    })
   }
+
+
+//  def calc: Unit = {
+//    val lines = sc.textFile("data.txt")
+//    val lineLengths = lines.map(s => s.length)
+//    val totalLength = lineLengths.reduce((a, b) => a + b)
+//  }
 }
 
-//gl = gitlab.Gitlab('http://gitlab.com', private_token='AtKBow56qjVEjfDxupsW')
-//gl.auth()
-//
-g2 = gitlab.Gitlab('http://gitlab-poc.globallogic.com', private_token='KonoEtYRBWstrcaFxXrg')
-g2.auth()
+class Point(val xc: Int, val yc: Int) {
+  var x: Int = xc
+  var y: Int = yc
 
-projects = g2.projects.list()
-i = 0
-for project in projects:
-  i += 1
-try:
-lang = project.languages()
-except Exception as ex:
-  logging.error(ex)
-lang = None
-print(str(i) + ":" + project.name + ":" + str(lang))
-if lang is not None:
-for l in lang:
-  print(l + ":" + str(lang[l]))
-
+  def move(dx: Int, dy: Int) {
+    x = x + dx
+    y = y + dy
+  }
+}
 

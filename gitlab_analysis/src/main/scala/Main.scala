@@ -8,7 +8,7 @@ import org.apache.spark.SparkConf
 object Main {
   def main(args: Array[String]) {
     val url = "https://gitlab-poc.globallogic.com"
-    val token = "KonoEtYRBWstrcaFxXrg"
+    val token = ""
     val gitlabAPI = new GitLabApi(url, token)
     val projApi = gitlabAPI.getProjectApi
     val projList = projApi.getProjects()
@@ -22,6 +22,10 @@ object Main {
       })
       println()
     })
+
+
+
+
   }
 
 
@@ -32,13 +36,12 @@ object Main {
 //  }
 }
 
-class Point(val xc: Int, val yc: Int) {
-  var x: Int = xc
-  var y: Int = yc
-
-  def move(dx: Int, dy: Int) {
-    x = x + dx
-    y = y + dy
-  }
-}
-
+//class Point(val xc: Int, val yc: Int) {
+//  var x: Int = xc
+//  var y: Int = yc
+//
+//  def move(dx: Int, dy: Int) {
+//    x = x + dx
+//    y = y + dy
+//  }
+//}

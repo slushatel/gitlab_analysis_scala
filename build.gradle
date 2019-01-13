@@ -1,0 +1,36 @@
+version '1.0-SNAPSHOT'
+
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'scala'
+apply plugin: 'war'
+
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+
+
+//    scalaVersion := "2.12.8"
+
+// https://mvnrepository.com/artifact/org.apache.spark/spark-core
+    compile group: 'org.apache.spark', name: 'spark-core_2.12', version: '2.4.0'
+
+// https://mvnrepository.com/artifact/org.gitlab/java-gitlab-api
+//    compile group: 'org.gitlab', name: 'java-gitlab-api', version: '4.1.0'
+
+// https://mvnrepository.com/artifact/org.gitlab4j/gitlab4j-api
+    compile group: 'org.gitlab4j', name: 'gitlab4j-api', version: '4.9.11'
+//    libraryDependencies += "javax.ws.rs" % "javax.ws.rs-api" % "2.1" artifacts( Artifact("javax.ws.rs-api", "jar", "jar"))
+
+// https://mvnrepository.com/artifact/org.apache.livy/livy-client-http
+    compile group: 'org.apache.livy', name: 'livy-client-http', version: '0.4.0-incubating'
+//    libraryDependencies += "org.apache.livy" % "livy-scala-api_2.11" % "0.5.0-incubating"
+    implementation 'org.scala-lang:scala-library:2.12.8'
+}

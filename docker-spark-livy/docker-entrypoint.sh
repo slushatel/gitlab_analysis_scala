@@ -6,6 +6,7 @@ sleep 10
 /usr/livy/livy-0.4.0-incubating-bin/bin/livy-server start &
 
 
+
 cleanup ()                                                                 
 {                                                                          
   kill -s SIGTERM $!                                                         

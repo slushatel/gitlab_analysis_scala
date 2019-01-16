@@ -3,7 +3,7 @@
 import java.net.URI
 
 import org.apache.livy.{LivyClient, LivyClientBuilder}
-import org.gitlab4j.api.GitLabApi
+//import org.gitlab4j.api.GitLabApi
 
 import scala.reflect.io.File
 //import scala.collection.JavaConverters._

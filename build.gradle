@@ -1,36 +1,55 @@
 version '1.0-SNAPSHOT'
 
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.3'
+    }
+}
+
 apply plugin: 'idea'
 apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'scala'
 apply plugin: 'war'
-
 
 sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+//    maven {
+//        url "http://repo.hortonworks.com/content/repositories/releases/"
+//    }
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-
-
-
-//    scalaVersion := "2.12.8"
-
-// https://mvnrepository.com/artifact/org.apache.spark/spark-core
-    compile group: 'org.apache.spark', name: 'spark-core_2.12', version: '2.4.0'
-
-// https://mvnrepository.com/artifact/org.gitlab/java-gitlab-api
 //    compile group: 'org.gitlab', name: 'java-gitlab-api', version: '4.1.0'
+    compile('org.gitlab4j:gitlab4j-api:4.9.11')
+//    {
+//        exclude group: 'org.glassfish.jersey.media', module: 'jersey-media-multipart'
+//    }
+    // https://mvnrepository.com/artifact/org.gitlab4j/gitlab4j-api
+//    compile group: 'org.gitlab4j', name: 'gitlab4j-api', version: '4.0.5'
 
-// https://mvnrepository.com/artifact/org.gitlab4j/gitlab4j-api
-    compile group: 'org.gitlab4j', name: 'gitlab4j-api', version: '4.9.11'
-//    libraryDependencies += "javax.ws.rs" % "javax.ws.rs-api" % "2.1" artifacts( Artifact("javax.ws.rs-api", "jar", "jar"))
+    compileOnly group: 'org.apache.spark', name: 'spark-core_2.11', version: '2.2.1'
+    compileOnly group: 'org.apache.spark', name: 'spark-sql_2.11', version: '2.2.1'
+    compileOnly group: 'org.apache.livy', name: 'livy-client-http', version: '0.4.0-incubating'
+    compileOnly 'org.scala-lang:scala-library:2.12.8'
 
-// https://mvnrepository.com/artifact/org.apache.livy/livy-client-http
-    compile group: 'org.apache.livy', name: 'livy-client-http', version: '0.4.0-incubating'
-//    libraryDependencies += "org.apache.livy" % "livy-scala-api_2.11" % "0.5.0-incubating"
-    implementation 'org.scala-lang:scala-library:2.12.8'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
 }
+
+shadowJar {
+    configurations = [project.configurations.compile]
+}
+
+//task customFatJar(type: Jar) {
+//    manifest {
+//        attributes 'Main-Class': 'com.baeldung.fatjar.Application'
+//    }
+//    baseName = 'all-in-one-jar'
+//    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+//    with jar
+//}

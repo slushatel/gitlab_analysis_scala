@@ -4,7 +4,7 @@ import org.apache.livy.LivyClientBuilder;
 
 import java.io.File;
 import java.net.URI;
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Example execution:
@@ -26,21 +26,25 @@ public class GitlabCountLangApp {
         LivyClient client = new LivyClientBuilder().setURI(new URI(livyUrl)).build();
 
         try {
-            File dir = new File(pathToJobJar);
-            File[] filesList = dir.listFiles();
-            for (File file : filesList) {
-                if (file.getName().endsWith(".jar")) {
-                    System.out.println(file.getName());
-                    client.uploadJar(file).get();
-                }
-            }
+            uploadJars(client, pathToJobJar + "/libs");
+            uploadJars(client, pathToJobJar + "/build/libs");
 
-//            client.uploadJar(new File(pathToJobJar)).get();
-//            client.uploadJar(new File("d:\\work\\github_poc\\gitlab_analysis_scala\\build\\libs\\gitlab4j-api-4.9.11.jar")).get();
-            Map<String, Float> langs = client.submit(new GitlabCountLangAppJob(slices)).get();
-            langs.forEach((key, value) -> System.out.println(key + ":" + value));
+//            Integer langs = client.submit(new GitlabCountLangAppJob(slices)).get();
+//            System.out.println("count of proj:" + langs);
+//            langs.forEach((key, value) -> System.out.println(key + ":" + value));
         } finally {
             client.stop(true);
+        }
+    }
+
+    private static void uploadJars(LivyClient client, String dir) throws ExecutionException, InterruptedException {
+        File dirFile = new File(dir);
+        File[] filesList = dirFile.listFiles();
+        for (File file : filesList) {
+            if (file.getName().endsWith(".jar")) {
+                System.out.println(file.getName());
+                client.uploadJar(file).get();
+            }
         }
     }
 }

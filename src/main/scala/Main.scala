@@ -1,6 +1,6 @@
 
 //import org.gitlab.api.GitlabAPI
-import org.gitlab4j.api.GitLabApi
+//import org.gitlab4j.api.GitLabApi
 //import scala.collection.JavaConverters._
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
@@ -9,19 +9,19 @@ object Main {
   def main(args: Array[String]) {
     val url = "https://gitlab-poc.globallogic.com"
     val token = ""
-    val gitlabAPI = new GitLabApi(url, token)
-    val projApi = gitlabAPI.getProjectApi
-    val projList = projApi.getProjects()
-    var n = 0
-    projList.forEach(project => {
-      n += 1
-      println(n + ": " + project.getName)
-      val lang = projApi.getProjectLanguages(project.getId)
-      lang.entrySet().forEach(l => {
-        println(l.getKey + ":" + l.getValue)
-      })
-      println()
-    })
+//    val gitlabAPI = new GitLabApi(url, token)
+//    val projApi = gitlabAPI.getProjectApi
+//    val projList = projApi.getProjects()
+//    var n = 0
+//    projList.forEach(project => {
+//      n += 1
+//      println(n + ": " + project.getName)
+//      val lang = projApi.getProjectLanguages(project.getId)
+//      lang.entrySet().forEach(l => {
+//        println(l.getKey + ":" + l.getValue)
+//      })
+//      println()
+//    })
 
 
 

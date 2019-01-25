@@ -1,8 +1,4 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Encoders;
-import org.apache.spark.sql.SparkSession;
 import org.gitlab4j.api.Constants;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
@@ -20,41 +16,53 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 //import scala.collection.JavaConverters
 
-public final class GitlabLangCount {
+public final class GitlabLangCountLocal {
     public static void main(String[] args) throws Exception {
-        SparkSession spark = SparkSession
-                .builder()
-                .appName("JavaWordCount")
-                .getOrCreate();
-        spark.sparkContext().setLogLevel("ERROR");
 
-//        String url = "https://gitlab-poc.globallogic.com";
-        String url = "https://gitlab.com";
-        System.out.println(url);
-//        String token = "q1NaycEiZam4sfQ42xjv"; //gitlab-poc
-        String token = "BwYBz5SCrYnAa6ENu1ZX"; //gitlab
-        GitLabApi gitlabAPI = new GitLabApi(url, token);
+        GitLabApi gitlabAPI = GitlabApiHolder.gitlabAPI();
         ProjectApi projApi = gitlabAPI.getProjectApi();
+        int projByPage = 100;
 
-        List<Project> projList = projApi.getProjects(null, null, Constants.ProjectOrderBy.CREATED_AT,
+
+
+
+        Stream<Project> projectStream = projApi.getProjects(null, null, Constants.ProjectOrderBy.CREATED_AT,
                 Constants.SortOrder.ASC, null, null, null, null,
-                null, true, 1, 100);
-//        List<Project> projList = projApi.getProjects();
-        System.out.println("Projects count: " + projList.size());
+                null, true, projByPage).stream();
+        AtomicLong projCount = new AtomicLong();
 
-        Stream<Integer> str = projList.stream().map(project -> project.getId());
-//        Stream<Long> str = projList.parallelStream().map(project -> project.getStatistics().getStorageSize());
+        ForkJoinPool forkJoinPool = new ForkJoinPool(20);
+        Map<String, Float> lang = forkJoinPool.submit(() ->
+                projectStream.parallel().map(project -> {
+                    long i = projCount.incrementAndGet();
+                    System.out.println("projCount: " + i);
+                    return project.getId();
+                })
+                        .map(GitlabLangCountLocal::callMap)
+                        .reduce(GitlabLangCountLocal::callReduce).orElse(new HashMap<>())
+        ).get();
 
-        Dataset<Integer> listDS = spark.createDataset(str.collect(Collectors.toList()), Encoders.INT());
-        JavaRDD<Integer> javaRDD = listDS.toJavaRDD();
-        javaRDD.repartition(10);
-        Map<String, Float> lang = javaRDD.map(GitlabLangCount::callMap).reduce(GitlabLangCount::callReduce);
+//        Map<String, Float> lang = projectStream.map(project -> {
+//            projCount.incrementAndGet();
+//            System.out.println("projCount: " + projCount.get());
+//            return project.getId();
+//        })
+//                .map(GitlabLangCountLocal::callMap)
+//                .reduce(GitlabLangCountLocal::callReduce).orElse(new HashMap<>());
 
+
+        long projCount_ = projCount.get();
+        lang.forEach((key, value) -> {
+            lang.put(key, lang.get(key) / projCount_);
+        });
         System.out.println("calculation finished");
 
         AtomicReference<Float> sum = new AtomicReference<>((float) 0);
@@ -64,7 +72,7 @@ public final class GitlabLangCount {
         });
         System.out.println("all lang sum: " + sum);
 
-        spark.stop();
+//        spark.stop();
 
         saveResult(lang);
     }
@@ -79,7 +87,7 @@ public final class GitlabLangCount {
             List<StatisticRequestBody> langList = lang.entrySet().stream()
                     .map(entry -> new StatisticRequestBody(
                             "language percent by projects count", "GitLab", entry.getKey(), new Date(), entry.getValue())
-            ).collect(Collectors.toList());
+                    ).collect(toList());
 
             String json_input = objectMapper.writeValueAsString(langList);
             Response response = webResource.request().accept(MediaType.APPLICATION_JSON)
